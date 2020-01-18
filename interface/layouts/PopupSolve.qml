@@ -96,6 +96,8 @@ Popup {
                     return "Сначала введите N.\nN должно быть целым числом."
                 case "nNotIntError":
                     return "N должно быть целым числом."
+                case "TooBigNError":
+                    return "Число N слишком большое.\nДостигнута максимальная вложенность рекурсии.\nПопробуйте ввести число поменьше."
                 case "CodeSolveError":
                     return "Проблема при решении рекурсии.\nСкорее всего введенный код не соответствовал\nописанным в помощи правилам."
                 case "notSolved":
@@ -201,8 +203,7 @@ Popup {
 
         //count for n result here
         onCountValueResult: {
-            if (count_value == "nNotIntError"
-                    || count_value == "CodeSolveError") {
+            if (count_value == "nNotIntError"|| count_value == "CodeSolveError" || count_value == "TooBigNError") {
                 solveStatus = count_value;
                 isSolveError = true;
             } else {

@@ -39,7 +39,8 @@ class Converter(QObject):
     def count_val_math(self, n: int,
                        filtered_lines: []) -> str:  # returns int value, print output or both (depends on ЕГЭ task)
         python_code = self.convert_math_to_py(filtered_lines, "CodeSolveError")
-        return self.count_val_py(n, python_code)
+        # print(python_code)
+        return self.count_val_py(n, python_code.splitlines())
 
     def count_val_py(self, n: int,
                      filtered_lines: []) -> str:  # returns int value, print output or both (depends on ЕГЭ task)
@@ -61,6 +62,10 @@ class Converter(QObject):
                 res_arr.append(tmp)
             result = "\n\n".join(res_arr)
             print(result)
+        #
+        except RecursionError as exception:
+            print("solve for n error RECURSION", exception)
+            result = "TooBigNError"
         except BaseException as exception:
             print("solve for n error", exception)
             result = "CodeSolveError"
