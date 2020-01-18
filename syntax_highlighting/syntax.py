@@ -201,7 +201,7 @@ def f(n):
 
 
 def g(n):
-    print("omg")
+    print("omggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggg")
 
 
 def kek(n):

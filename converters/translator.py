@@ -138,7 +138,7 @@ class math_to_py:
 
 
 class math_to_py_converter:
-    def convert_math_to_py(self, funcs: list) -> str:
+    def convert(self, funcs: list) -> str:
         code: str = ""
         for f in funcs:
             code += "def " + f.name + "(n):"
@@ -232,7 +232,7 @@ class py_to_math:
 
 
 class py_to_math_converter:
-    def convert_py_to_math(self, funcs: list) -> str:
+    def convert(self, funcs: list) -> str:
         text: str = ""
         for f in funcs:
             for cond in f.conditions:

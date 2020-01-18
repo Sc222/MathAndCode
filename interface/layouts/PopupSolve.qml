@@ -6,6 +6,8 @@ import QtQuick.Layouts 1.13
 
 Popup {
     id: popup
+    property bool isSolveError: false
+    property string solveStatus: "notSolved"
     //property alias stackLayout: stackLayout
     //contentWidth: stackLayout.layer.
     //contentHeight: columnLayout.implicitHeight
@@ -14,17 +16,16 @@ Popup {
     leftPadding: 20
     topPadding: 20
     anchors.centerIn: parent
-    //anchors.fill: parent
     modal: true
     focus: true
     closePolicy: Popup.NoAutoClose
 
     onAboutToHide: {
-        textFieldNInput.text = ""
-        //todo return all on hide
-        //if(!ma.containsMouse) {
-        //    console.log("click outside: commit the changes")
-        // }
+        textFieldN.text = "";
+        textSolveResult.text = "";
+        solveStatus = "notSolved";
+        isSolveError = false;
+        //todo reset all values to default on hide
     }
 
     background: Rectangle {
@@ -34,7 +35,6 @@ Popup {
     }
 
     ColumnLayout {
-        //maximumHeight: parent.height - 100
         anchors.rightMargin: -1
         anchors.leftMargin: 0
         anchors.bottomMargin: 0
@@ -54,14 +54,18 @@ Popup {
                 Layout.alignment: Qt.AlignLeft | Qt.Top
             }
             TextField {
+                id: textFieldN
                 Layout.topMargin: -10
                 font.weight: Font.DemiBold
+                Material.primary: isSolveError ? Material.Red : Material.Indigo
                 color: Material.primary
-                id: textFieldNInput
                 maximumLength: 10
                 Layout.alignment: Qt.AlignLeft | Qt.Top
-                placeholderTextColor: Material.color(Material.Indigo,
-                                                     Material.Shade100)
+                placeholderTextColor: isSolveError ? Material.color(
+                                                         Material.Red,
+                                                         Material.Shade100) : Material.color(
+                                                         Material.Indigo,
+                                                         Material.Shade100)
                 placeholderText: qsTr("Введите N")
                 background: null
                 selectByMouse: true
@@ -75,55 +79,66 @@ Popup {
             topPadding: 0
             bottomPadding: 0
             contentItem: Rectangle {
+                id: rectSeparator
                 implicitWidth: 200
                 implicitHeight: 3
-                color: "#3F51B5"
+                color: isSolveError ? "#E57373" : "#3F51B5"
             }
         }
         Label {
+            Layout.minimumWidth:  700
             id: labelSolveStatus
-            text: qsTr("Подсчет возвращаемого значения (или вывода)\nвведенных рекурсий для заданного N.")
+            text: {
+                switch (solveStatus) {
+                case "codeInputEmptyError":
+                    return "Сначала введите рекурсию\nв главном меню программы."
+                case "nInputEmptyError":
+                    return "Сначала введите N.\nN должно быть целым числом."
+                case "nNotIntError":
+                    return "N должно быть целым числом."
+                case "CodeSolveError":
+                    return "Проблема при решении рекурсии.\nСкорее всего введенный код не соответствовал\nописанным в помощи правилам."
+                case "notSolved":
+                    //not solved, but no errors
+                    return "Подсчет возвращаемого значения (или вывода)\nвведенных рекурсий для заданного N"
+                case "solved":
+                    //solved, no errors
+                    return "Вывод программы"
+                }
+            }
             color: Material.color(Material.Grey, Material.Shade600)
             bottomPadding: 0
             topPadding: 7
-            visible: false
-
+            visible: true
             anchors.right: parent.right
             anchors.left: parent.left
             Layout.alignment: Qt.AlignLeft | Qt.AlignTop
             font.pointSize: 12
         }
-
-
-        /*ColumnLayout {
-            anchors.right: parent.right
-            anchors.left: parent.left
-            Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
-            anchors.verticalCenter: parent.verticalCenter
-            spacing: 5*/
-
-        //todo add load from file and delete buttons (like yandex translate has)
-        Label {
-            color: Material.accent
-            text: "Вывод программы"
-            Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
-            font.pointSize: 12
-            font.bold: true
-        }
         ScrollView {
+            visible: solveStatus == "solved"? true: false
             id: scrollViewResult
-            Layout.maximumHeight: appHeight - 275
-            Layout.maximumWidth: appWidth - 50
-            anchors.right: parent.right
-            anchors.left: parent.left
-
-            // Layout.fillWidth: true
+            Layout.bottomMargin: -14
+            Layout.topMargin: -7
+            Layout.maximumHeight: appHeight - 240
+            Layout.maximumWidth: appWidth - 80
+            Layout.fillHeight: true
+            Layout.fillWidth: true
+            Layout.alignment: Qt.AlignHCenter | Qt.AlignTop
+            //anchors.right: parent.right
             //anchors.left: parent.left
-            //anchors.right: scrollViewResult.left
+            //anchors.top: labelSolveStatus.bottom
+            //anchors.bottom: buttonsRow.top
             TextArea {
-
+                //bottomPadding: -5
+                //anchors.centerIn: parent
+               // Layout.bottomMargin: -50
+               // Layout.topMargin: -10
+                //Layout.alignment: Qt.AlignRight | Qt.AlignVCenter
                 id: textSolveResult
                 text: ""
+                anchors.fill: parent
+                verticalAlignment: Text.AlignVCenter
                 color: Material.color(Material.Grey, Material.Shade800)
                 placeholderText: ""
                 background: null
@@ -133,15 +148,12 @@ Popup {
                 font.pointSize: 9
             }
         }
-
-        //}
         RowLayout {
+            id: buttonsRow
             spacing: 25
             Layout.alignment: Qt.AlignRight | Qt.AlignVCenter
             Button {
-                //Material.background: Material.primary
-                id: helpButton
-                text: qsTr("Подсчитать")
+                text: qsTr("Решить")
                 font.weight: Font.DemiBold
                 font.capitalization: Font.MixedCase
                 flat: true
@@ -151,17 +163,19 @@ Popup {
                 display: AbstractButton.TextOnly
                 TapHandler {
                     onTapped: {
-                        if (textFieldNInput.text == "") {
-                            errorText = "nInputEmptyError"
-                            popupError.open()
-                            //PopupEmptyInput
-                            // popupEmptyInput.open();
-                        } else {
-                            converter.countValue(textFieldNInput.text,
+                        if (textAreaInput.text == "") {
+                            isSolveError = true;
+                            solveStatus = "codeInputEmptyError";
+                        }
+                        else if (textFieldN.text == "") {
+                            isSolveError = true;
+                            solveStatus = "nInputEmptyError";
+                        }
+                        else {
+                            converter.count_value(textFieldN.text,
                                                  textAreaInput.text,
                                                  isPythonToMath)
                         }
-                        //popup.close() //todo open help menu
                     }
                 }
             }
@@ -187,23 +201,15 @@ Popup {
 
         //count for n result here
         onCountValueResult: {
-            //textAreaOutput.text = "onCountValueResult";
-            //labelSolvePlaceholder.text = countValue[0]
-            //textSolveCode.text = countValue[0]
-            textSolveResult.text = countValue;
-            //labelSolvePlaceholder.text = countValue
-            //textAreaOutput.text = countValue;
-
-
-            /*if (countValue == "nNotIntError")  //error converting python to math, wrong input
-            {
-                textAreaOutput.text = "";
-                errorText = "nNotIntError";
-               // popupError.
-                popupError.open();
-                //popupPyToMathError.open()
+            if (count_value == "nNotIntError"
+                    || count_value == "CodeSolveError") {
+                solveStatus = count_value;
+                isSolveError = true;
+            } else {
+                solveStatus = "solved";
+                isSolveError = false;
+                textSolveResult.text = count_value;
             }
-            else  //success*/
         }
     }
 }
@@ -211,8 +217,8 @@ Popup {
 /*##^##
 Designer {
     D{i:0;autoSize:true;height:480;width:640}D{i:1;anchors_height:100;anchors_width:100}
-D{i:3;anchors_height:100;anchors_width:100}D{i:5;anchors_height:100;anchors_width:100}
-D{i:4;anchors_height:100;anchors_width:100}
+D{i:4;anchors_height:100;anchors_width:100}D{i:5;anchors_height:100;anchors_width:100}
+D{i:3;anchors_height:100;anchors_width:100}D{i:6;anchors_height:100;anchors_width:100}
 }
 ##^##*/
 

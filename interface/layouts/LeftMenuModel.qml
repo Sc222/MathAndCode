@@ -25,12 +25,12 @@ ListModel {
         selected: "0"
         click: "export"
     }
-    ListElement {
+    /*ListElement {              //todo history menu in future
         ic: "images/history.png"
         name: "История"
        selected: "0"
        click: "history"
-    }
+    }*/
     ListElement {
         ic: "images/help.png"
         name: "Помощь"

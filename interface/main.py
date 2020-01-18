@@ -14,40 +14,43 @@ class Converter(QObject):
         QObject.__init__(self)
         self.__intRegex__ = re.compile(r"^[-]?\d+$")
 
-    def isInt(self, s: str) -> bool:
+    def is_int(self, s: str) -> bool:  # todo helper class
         return self.__intRegex__.match(str(s)) is not None
 
-    ##convertSignal = pyqtSignal(str, arguments=['convert'])
-    convertResult = pyqtSignal(str, arguments=['convert'])
-    countValueResult = pyqtSignal(str, arguments=['countValue'])
+    convert_result = pyqtSignal(str, name="convertResult", arguments=['convert'])
+    count_value_result = pyqtSignal(str, name="countValueResult", arguments=['count_value'])
 
     # слот для расчета значения (вывода) рекурсий в точке
     @pyqtSlot(str, str, bool)
-    def countValue(self, nRaw: str, inputText: str, isPythonToMath: bool):
+    def count_value(self, n_raw: str, inp: str, is_py_to_math: bool):
         # todo вылетает если N большое (переполнение стека и тд)
-        result = ""
-        if not self.isInt(nRaw):
-            result = "nNotIntError"
-            # result.append("nNotIntError")
+        if not self.is_int(n_raw):
+            res = "nNotIntError"
         else:
-            # solve_res = "ТЕСТ"
-            n = int(nRaw)
-            filtered_lines = self.filterAndSplitMainInput(inputText)
-            '''result.append("Код:\n" + "\n".join(filtered_lines))       # 1-й элемент массива - код'''
-            if isPythonToMath:
-                result = self.countValuePython(n, filtered_lines)
-        print(result)
-        self.countValueResult.emit(result)
+            n = int(n_raw)
+            filtered_lines = self.filter_and_split_code_input(inp)
+            if is_py_to_math:
+                res = self.count_val_py(n, filtered_lines)
+            else:
+                res = self.count_val_math(n, filtered_lines)
+        print(res)
+        self.count_value_result.emit(res)
 
-    def countValuePython(self, n, filtered_lines):  # returns int value or print output (depends on ЕГЭ task)
-        pyToMath = py_to_math()
+    def count_val_math(self, n: int,
+                       filtered_lines: []) -> str:  # returns int value, print output or both (depends on ЕГЭ task)
+        python_code = self.convert_math_to_py(filtered_lines, "CodeSolveError")
+        return self.count_val_py(n, python_code)
+
+    def count_val_py(self, n: int,
+                     filtered_lines: []) -> str:  # returns int value, print output or both (depends on ЕГЭ task)
+        py_to_math_obj = py_to_math()
         try:
-            funcs = pyToMath.break_to_funcs(filtered_lines)
-            result_arr = []
+            funcs = py_to_math_obj.break_to_funcs(filtered_lines)
+            res_arr = []
             for f in funcs:
                 # print(ff.name)
-                int_res = get_int_result_for(f"{f.name}({n})", pyToMath.code)  # todo fix lowercase
-                str_res = get_str_result_for(f"{f.name}({n})", pyToMath.code)
+                int_res = get_int_result_for(f"{f.name}({n})", py_to_math_obj.code)  # todo fix lowercase
+                str_res = get_str_result_for(f"{f.name}({n})", py_to_math_obj.code)
                 tmp = f"Функция: {f.name}({n})"
                 if int_res is not None:
                     tmp = f"{tmp}\n{f.name}({n}) = {str(int_res)}"
@@ -55,64 +58,57 @@ class Converter(QObject):
                     tmp = f"{tmp}\nВыведено на консоль: {str_res}"
                 if int_res is None and str_res == "":
                     tmp = f"{tmp}\nФункция ничего не выводит и ничего не возвращает"
-                result_arr.append(tmp)
-            result = "\n\n".join(result_arr)
+                res_arr.append(tmp)
+            result = "\n\n".join(res_arr)
             print(result)
-
-            '''pyToMath = py_to_math()
-            pyToMath.break_to_funcs(filtered_lines)
-            result = self.countForNpython(n, filtered_lines)
-            print(get_int_result_for(f"f({n})", pyToMath.code))  # todo FIX works only for function named f !!!
-            №inputText = self.convertMathToPy(filtered_lines)
-            output=""
-            #convertedText = py_to_math_converter.convert_py_to_math(py_to_math_converter, funcs)'''
-        except BaseException as exception:  # todo is it needed????????
+        except BaseException as exception:
             print("solve for n error", exception)
-            result = "PyBreakToFuncsError"
+            result = "CodeSolveError"
         return result
 
     # слот для перевода из одной формы в другую
     @pyqtSlot(str, bool)
-    def convert(self, inputText: str, isPythonToMath: bool):
-        filtered_lines = self.filterAndSplitMainInput(inputText)
+    def convert(self, inp: str, is_py_to_math: bool):
+        filtered_lines = self.filter_and_split_code_input(inp)
 
-        if isPythonToMath:
-            convertedText = self.convertPyToMath(filtered_lines)
+        if is_py_to_math:
+            res = self.convert_py_to_math(filtered_lines)
         else:
             # todo если вбить бред, мат. представление не вылетает, сделать, чтобы вылетало
             # todo пока вылет ошибки реализован при условии, что возвращается def f(n):
-            convertedText = self.convertMathToPy(filtered_lines)
-        print(convertedText)
-        self.convertResult.emit(convertedText)
+            res = self.convert_math_to_py(filtered_lines, "MathToPyError")
+        print(res)
+        self.convert_result.emit(res)
 
-    def convertPyToMath(self, filtered_lines):
+    def convert_py_to_math(self, filtered_lines: []) -> str:
         pyToMath = py_to_math()
         try:
             funcs = pyToMath.break_to_funcs(filtered_lines)
-            convertedText = py_to_math_converter.convert_py_to_math(py_to_math_converter, funcs)
+            res = py_to_math_converter().convert(funcs)
         except BaseException as exception:
             print("convert error", exception)
-            convertedText = "PyToMathError"  # todo python to math error dialog
-        return convertedText
+            res = "PyToMathError"  # todo python to math error dialog
+        return res
 
-    def convertMathToPy(self, filtered_lines):
-        mathToPy = math_to_py()
+    def convert_math_to_py(self, filtered_lines: [], error_str: str) -> str:
+        math_to_py_obj = math_to_py()
         try:
-            funcs = mathToPy.break_to_funcs(filtered_lines)
-            convertedText = math_to_py_converter.convert_math_to_py(math_to_py_converter, funcs)
-            if convertedText == "def f(n):":  # todo remove this workaround later
-                convertedText = "MathToPyError"
+            funcs = math_to_py_obj.break_to_funcs(filtered_lines)
+            res = math_to_py_converter().convert(funcs)
+            print(res)
+            if res.strip() == "def f(n):" or res.strip() == "":  # todo remove this workaround later
+                res = error_str
         except BaseException as exception:
             print("convert error", exception)
-            convertedText = "MathToPyError"  # todo math to python error dialog
-        return convertedText
+            res = error_str  # todo math to python error dialog
+        return res
 
     # Преобразование ввода Python-кода или мат. представления
-    def filterAndSplitMainInput(self, inputText):
-        lines = inputText.splitlines()
+    def filter_and_split_code_input(self, inp: str) -> []:
+        lines = inp.splitlines()
         filtered_lines = []
         for line in lines:
-            if not (re.match(r'^([\s\t]+)$', line) or line == ''):
+            if not (line.strip() == ''):
                 filtered_lines.append(line)
         return filtered_lines
 
@@ -132,5 +128,5 @@ if __name__ == "__main__":
     engine.rootContext().setContextProperty("converter", converter)
     # загружаем файл qml в движок
     engine.load(os.path.join("layouts", "main.qml"))
-    engine.quit.connect(app.quit)
+    # engine.quit.connect(app.quit) wtf is this
     sys.exit(app.exec_())

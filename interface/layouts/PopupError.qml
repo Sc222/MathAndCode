@@ -58,10 +58,6 @@ Popup {
                     return "Неверный формат Python кода.\nПримеры указаны в разделе помощь."
                 case "MathToPyError":
                     return "Неверный формат Мат. представления.\nПримеры указаны в разделе помощь."
-                case "nInputEmptyError":
-                    return "Сначала введите N.\nN должно быть целым числом."
-                case "nNotIntError":
-                    return "N должно быть целым числом."
                 default:
                     return "Все в порядке."
                 }

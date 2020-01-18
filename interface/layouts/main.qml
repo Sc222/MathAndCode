@@ -15,34 +15,20 @@ ApplicationWindow {
     color: Material.color(Material.Grey, Material.Shade100)
 
     property bool isPythonToMath: true
-    property string errorText: "none"
+    property string errorText: ""
     property int appWidth: 1200
     property int appHeight: 500
 
     onWidthChanged: {
-        textAreaOutput.text=appWidth+"x"+appHeight;
+        //textAreaOutput.text=appWidth+"x"+appHeight;
         appWidth = window.width;
     }
 
     onHeightChanged: {
-        textAreaOutput.text=appWidth+"x"+appHeight;
+        //textAreaOutput.text=appWidth+"x"+appHeight;
         appHeight = window.height;
     }
 
-
-    /*ToolBar {
-        id: overlayHeader
-
-        z: 1
-        width: parent.width
-        parent: window.overlay
-
-        Label {
-            id: label
-            anchors.centerIn: parent
-            text: "Qt Quick Controls 2"
-        }
-    }*/
     Drawer {
         id: drawer
 
@@ -248,11 +234,11 @@ ApplicationWindow {
                 onClicked: {
                     if (textAreaInput.text == "") {
                         //PopupEmptyInput
-                        errorText = "mainInputEmptyError"
-                        popupError.open()
-                        //popupErrorText.text="Ввод не может быть пустым.\nПримеры ввода находятся в разделе помощь.";
+                        textAreaOutput.text="";//clearing output area when error
+                        errorText = "mainInputEmptyError";
+                        popupError.open();
                     } else {
-                        converter.convert(textAreaInput.text, isPythonToMath)
+                        converter.convert(textAreaInput.text, isPythonToMath);
                     }
                 }
             }
@@ -353,47 +339,23 @@ ApplicationWindow {
         onConvertResult: {
             if (convert == "PyToMathError") //error converting python to math, wrong input
             {
-                textAreaOutput.text = ""
-                errorText = "PyToMathError"
-                popupError.open()
-                //popupErrorText.text="Неверный формат Python кода.\nПримеры указаны в разделе помощь.";
-                //popupPyToMathError.open()
+                textAreaOutput.text = "";
+                errorText = "PyToMathError";
+                popupError.open();
             } else if (convert == "MathToPyError") //error converting math to python, wrong input
             {
-                textAreaOutput.text = ""
-                errorText = "MathToPyError"
-                popupError.open()
-                //popupErrorText.text="Неверный формат Мат. представления.\nПримеры указаны в разделе помощь.";
-                //popupMathToPyError.open()
-            } else
-                //success
-                textAreaOutput.text = convert
+                textAreaOutput.text = "";
+                errorText = "MathToPyError";
+                popupError.open();
+            } else//success
+                textAreaOutput.text = convert;
         }
     }
 
-    // Count for n results there
-
-    /*Connections {
-        target: countforn
-
-
-    }*/
     PopupError {
         id: popupError
     }
 
-
-    /*PopupEmptyInput {
-        id: popupEmptyInput
-    }
-
-    PopupPyToMathError {
-        id: popupPyToMathError
-    }
-
-    PopupMathToPyError {
-        id: popupMathToPyError
-    }*/
     PopupSolve {
         id: solvePopup
     }
