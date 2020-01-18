@@ -20,7 +20,7 @@ class func:
 
 
 class math_to_py:
-    _states = ["empty", "f", "f_open", "f_n", "f_num", "f_n_close", "f_num_close",
+    _states = ["empty", "f_reading", "f_open", "f_n", "f_num", "f_n_close", "f_num_close",
                "f_n_reading", "f_num_reading", "f_num_end", "cond_first", "cond_second", "cond_third", "f_n_end"]
 
     def __init__(self):
@@ -67,15 +67,19 @@ class math_to_py:
         self.cur_func.conditions[-1].cond = cond
         self._start_again()
 
-    def on_enter_f(self):
-        if not self.cur_symbol in self.funcs_dict:
-            self.funcs_dict[self.cur_symbol] = func()
-            self.funcs_dict[self.cur_symbol].name = self.cur_symbol
-        self.cur_func = self.funcs_dict[self.cur_symbol]
+    def on_enter_f_open(self):
+        self.cur_string = self.cur_string[:-1]
+        if not self.cur_string in self.funcs_dict:
+            self.funcs_dict[self.cur_string] = func()
+            self.funcs_dict[self.cur_string].name = self.cur_string
+        self.cur_func = self.funcs_dict[self.cur_string]
+        self.cur_string = ""
 
+    def on_enter_f_reading(self):
+        self.cur_string += self.cur_symbol
 
     def is_f(self):
-        return self.cur_symbol == "f" or self.cur_symbol == "g"
+        return self.cur_symbol.isalpha()
 
     def is_open_bracket(self):
         return self.cur_symbol == "("
@@ -105,8 +109,8 @@ class math_to_py:
         return self.cur_symbol == ";" or self.cur_symbol == "."
 
     def _create_casual_transitions(self):
-        self.machine.add_transition("move", "empty", "f", conditions="is_f")
-        self.machine.add_transition("move", "f", "f_open", conditions="is_open_bracket")
+        self.machine.add_transition("move", "empty", "f_reading", conditions="is_f")
+        self.machine.add_transition("move", "f_reading", "f_open", conditions="is_open_bracket")
         self.machine.add_transition("move", "f_open", "f_num", conditions="is_num")
         self.machine.add_transition("move", "f_num", "f_num_close", conditions="is_close_bracket")
         self.machine.add_transition("move", "f_open", "f_n", conditions="is_n")
@@ -125,7 +129,7 @@ class math_to_py:
                 if (i == ","):
                     continue
                 self.cur_symbol = i
-                if (self.machine.is_state("f_num_reading", self) or
+                if (self.machine.is_state("f_num_reading", self) or self.machine.is_state("f_reading", self) or
                         self.machine.is_state("f_n_reading", self) or self.machine.is_state("cond_third", self)):
                     self.cur_string += self.cur_symbol
                 self.move()
@@ -197,6 +201,8 @@ class py_to_math:
         cur_indentation = -1
         is_previous_cond = False  # Нужен для случаев действий вне блока if
         for line in map(lambda s: s.lower(), lines):
+            if line == "":
+                continue
             indentation = self._get_identation_size(line)
             if indentation != cur_indentation:
                 cur_indentation = indentation
@@ -264,18 +270,24 @@ def get_str_result_for(func_call: str, code: str):
 ##ПРИМЕРЫ
 '''
 wm = math_to_py()
-funcs = wm.break_to_funcs(["F(1) = 3; F(2) = 3; F(n) = 5*F(n-1) − 4*F(n−2) при n >2", "G(1) = 3; G(2) = 3; G(n) = 5*G(n-1) − 4*G(n−2) при n >2"])
+funcs = wm.break_to_funcs(["alpha(7) = 'asdsad'", "gamma(9) = 1000", "beta(n) = beta(n-1) + 1 при n > 1; beta(1) = 10"])
 math_to_py_code = math_to_py_converter.convert_math_to_py(math_to_py_converter, funcs)
 print(math_to_py_code)
-print(get_int_result_for("f(15)", math_to_py_code))
+print(get_int_result_for("beta(7)", math_to_py_code))
 cm = py_to_math()
 cm.break_to_funcs([
     "def F(n):",
     "   if n > 2:",
     "       return F(n-1)+F(n-2)+F(n-3)",
     "   else:",
-    "       return n"
+    "       return n",
+    "def G(n):",
+    "   if n > 2:",
+    "       return G(n-1)+G(n-2)+G(n-3)",
+    "   else:",
+    "       return n", "", ""
 ])
 print(get_int_result_for("f(6)", cm.code))
 print(py_to_math_converter.convert_py_to_math(py_to_math_converter, cm.funcs))
 '''
+
