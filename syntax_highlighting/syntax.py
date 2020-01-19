@@ -206,3 +206,4 @@ def g(n):
 
 def kek(n):
     a = input()
+
