@@ -8,10 +8,3 @@
 Примеры:
 - [Веб-страница](https://github.com/Sc222/MathAndCode/blob/master/examples/example.html)
 - [Текстовый файл](https://github.com/Sc222/MathAndCode/blob/master/examples/example.txt)
-
-### Скриншоты программы
-![](https://raw.githubusercontent.com/Sc222/MathAndCode/master/examples/main_menu.png)
-> Главное меню
-
-![](https://raw.githubusercontent.com/Sc222/MathAndCode/master/examples/solve_for_n_menu.png)
-> Меню решения рекурсии для N
