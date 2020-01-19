@@ -1,4 +1,6 @@
 PyQt5==5.13.2
 PyQt5-sip==12.7.0
-six==1.13.0
-transitions==0.7.1
+QScintilla==2.11.4
+six==1.14.0
+tabulate==0.8.6
+transitions==0.7.2

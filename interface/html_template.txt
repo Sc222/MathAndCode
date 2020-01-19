@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>Math and code</title>
+    <style>
+        table {
+            //border: 1px solid #E8EAF6;           
+            border-collapse: collapse;
+            width: 100%;
+            padding: 0px;
+            margin: 0px;
+        }
+
+        th {
+            padding: 10px;
+            border-bottom: 1.5px solid #ddd;
+            width: 50%;
+            text-align: center;
+            font-size: 22px;
+            font-family: Arial, Helvetica, sans-serif;
+            color: #3F51B5;
+            font-weight: bold;
+        }
+
+        td {
+            width: 50%;
+            font-family: Arial, Helvetica, sans-serif;
+            font-size: 16px;
+            text-align: left;
+            //vertical-align: center;
+            padding-left: 15px;
+            padding-right: 15px;
+            padding-bottom: 15px;
+        }
+
+        .card {
+            overflow-x: auto;
+            margin-left: 10%;
+            margin-right: 10%;
+            margin-top: 50px;
+            margin-bottom: 50px;
+            box-shadow: 0 6px 12px 0 rgba(0, 0, 0, 0.2);
+        }
+
+        pre {
+            margin: 0;
+            padding: 0;
+        }
+
+        code {
+            margin: 0;
+            padding: 0;
+        }
+
+    </style>
+</head>
+
+<body>
+    <div class="card">
+        <table>
+            <tr>
+                <th>FROMHEAD</th>
+                <th>TOHEAD</th>
+            </tr>
+            <tr>
+                <td>
+                    <pre><code>
+FROMCODE
+                    </code></pre>
+                </td>
+                <td style="border-left: 1.5px solid #ddd;">
+                    <pre><code>
+TOCODE
+                    </code></pre>
+                </td>
+            </tr>
+        </table>
+    </div>
+</body>
+
+</html>

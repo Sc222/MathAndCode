@@ -52,14 +52,16 @@ Popup {
             id: popupErrorText
             text: {
                 switch (errorText) {
+                case"NotReadyForExportError":
+                    return "Перед экспортом заполните поле ввода.\nЗатем произведите успешный перевод.\nВвод после этого не должен изменяться.";
                 case "mainInputEmptyError":
-                    return "Ввод не может быть пустым.\nПримеры ввода находятся в разделе помощь."
+                    return "Ввод не может быть пустым.\nПримеры ввода находятся в разделе помощь.";
                 case "PyToMathError":
-                    return "Неверный формат Python кода.\nПримеры указаны в разделе помощь."
+                    return "Неверный формат Python кода.\nПримеры указаны в разделе помощь.";
                 case "MathToPyError":
-                    return "Неверный формат Мат. представления.\nПримеры указаны в разделе помощь."
+                    return "Неверный формат Мат. представления.\nПримеры указаны в разделе помощь.";
                 default:
-                    return "Все в порядке."
+                    return "Все в порядке.";
                 }
             }
             color: Material.color(Material.Grey, Material.Shade600)

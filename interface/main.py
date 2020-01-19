@@ -3,11 +3,15 @@ import re
 from PyQt5.QtCore import QObject, pyqtSignal, pyqtSlot
 from PyQt5.QtGui import QGuiApplication
 from PyQt5.QtQml import QQmlApplicationEngine
+from tabulate import tabulate
+
 from converters.translator import *
 
 # noinspection PyUnresolvedReferences
 from interface import resource_rc
 
+
+# todo pdf save
 
 class Converter(QObject):
     def __init__(self):
@@ -19,6 +23,38 @@ class Converter(QObject):
 
     convert_result = pyqtSignal(str, name="convertResult", arguments=['convert'])
     count_value_result = pyqtSignal(str, name="countValueResult", arguments=['count_value'])
+
+    # слот для сохранения перевод в файл
+    @pyqtSlot(str, int, str, str, bool)
+    def export(self, path: str, file_type: int, inp_code: str, out_code: str, is_py_to_math: bool):
+        path = path[8:]  # todo works ok for linux?
+        print(path)
+        extensions = [".txt", ".html"]  # don't forget to add new when adding new save options
+        if not path.endswith(extensions[file_type]):
+            path = f"{path}{extensions[file_type]}"
+        if file_type == 1:
+            self.export_html(inp_code, is_py_to_math, out_code, path)
+        elif file_type == 0:
+            self.export_txt(inp_code, is_py_to_math, out_code, path)
+
+    def export_html(self, inp_code, is_py_to_math, out_code, path):
+        with open("html_template.txt", "r", encoding="utf8") as template:
+            data = template.read()
+            data = data.replace("FROMHEAD", "Python" if is_py_to_math else "Математическое представление")
+            data = data.replace("TOHEAD", "Математическое представление" if is_py_to_math else "Python")
+            data = data.replace("FROMCODE", inp_code)
+            data = data.replace("TOCODE", out_code)
+            with open(path, "w", encoding="utf8") as output:
+                output.write(data)
+
+    def export_txt(self, inp_code, is_py_to_math, out_code, path):
+        data = [
+            ["Python" if is_py_to_math else "Математическое представление",
+             "Математическое представление" if is_py_to_math else "Python"],
+            [inp_code, out_code]
+        ]
+        with open(path, "w", encoding="utf8") as output:
+            output.write(tabulate(data, headers='firstrow', tablefmt="grid"))
 
     # слот для расчета значения (вывода) рекурсий в точке
     @pyqtSlot(str, str, bool)

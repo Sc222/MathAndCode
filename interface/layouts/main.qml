@@ -15,6 +15,7 @@ ApplicationWindow {
     color: Material.color(Material.Grey, Material.Shade100)
 
     property bool isPythonToMath: true
+    property bool isReadyForExport: false
     property string errorText: ""
     property int appWidth: 1200
     property int appHeight: 500
@@ -82,11 +83,19 @@ ApplicationWindow {
                 onClicked: {
                     switch (click) {
                     case "solve":
-                        solvePopup.open()
-                        break
+                        solvePopup.open();
+                        break;
                     case "export":
-                        exportPopup.open()
-                        break
+                        if(isReadyForExport)
+                        {
+                            exportPopup.open();
+                        }
+                        else
+                        {
+                            errorText="NotReadyForExportError";
+                           popupError.open();
+                        }
+                        break;
                     }
                     //todo new menu items
                 }
@@ -196,6 +205,10 @@ ApplicationWindow {
                             selectByKeyboard: true
                             selectByMouse: true
                             font.pointSize: 9
+
+                            onTextChanged: {
+                                isReadyForExport=false;
+                            }
                         }
                     }
                 }
@@ -217,7 +230,10 @@ ApplicationWindow {
 
                 //code swap click swaps python and math
                 TapHandler {
-                    onTapped: isPythonToMath = !isPythonToMath
+                    onTapped: {
+                         isReadyForExport=false;
+                        isPythonToMath = !isPythonToMath;
+                    }
                 }
             }
 
@@ -233,6 +249,7 @@ ApplicationWindow {
 
                 onClicked: {
                     if (textAreaInput.text == "") {
+                         //isReadyForExport=false;
                         //PopupEmptyInput
                         textAreaOutput.text="";//clearing output area when error
                         errorText = "mainInputEmptyError";
@@ -339,16 +356,21 @@ ApplicationWindow {
         onConvertResult: {
             if (convert == "PyToMathError") //error converting python to math, wrong input
             {
+                 isReadyForExport=false;
                 textAreaOutput.text = "";
                 errorText = "PyToMathError";
                 popupError.open();
             } else if (convert == "MathToPyError") //error converting math to python, wrong input
             {
+                 isReadyForExport=false;
                 textAreaOutput.text = "";
                 errorText = "MathToPyError";
                 popupError.open();
             } else//success
+            {
+                 isReadyForExport=true;
                 textAreaOutput.text = convert;
+            }
         }
     }
 
